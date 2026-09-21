@@ -9,7 +9,7 @@ except Exception:
     pass
 
 # ============================================================
-# ECLIPSE SPIKE - VERSAO 6
+# ECLIPSE VÔLEI - VERSAO 7
 #
 # MODOS:
 #   1) 1V1 contra BOT
@@ -57,9 +57,13 @@ HAIR_PLAYER = (30, 27, 75)
 HAIR_AI = (69, 26, 3)
 
 screen = pygame.display.set_mode((GAME_W, GAME_H), pygame.DOUBLEBUF)
-pygame.display.set_caption("Eclipse Spike")
+pygame.display.set_caption("Eclipse Vôlei")
 clock = pygame.time.Clock()
 FONT_CACHE = {}
+
+# Nomes das equipes exibidos no jogo.
+TEAM_LEFT_NAME = "ECLIPSE VÔLEI"
+TEAM_RIGHT_NAME = "AURORA VÔLEI"
 
 
 def font(size, bold=True):
@@ -86,7 +90,7 @@ def rounded(surface, rect, color, radius=16, border=None, width=2):
 
 
 def beep(freq=300, duration=0.08):
-    # O Eclipse Spike fica propositalmente sem som.
+    # O Eclipse Vôlei fica propositalmente sem som.
     return None
 
 
@@ -973,7 +977,6 @@ point_timer = 0.0
 set_announce = ""
 set_timer = 0.0
 match_started = False
-training_mode = False
 player_style = 0
 court_swapped = False
 rotation_count = {"left": 0, "right": 0}
@@ -1045,22 +1048,17 @@ def configure_mode(selected_mode):
     left_team = []
     right_team = []
 
-    global training_mode
-    training_mode = selected_mode == "TREINO"
-    if mode == "TREINO":
-        left_team = [VolleyballPlayer(team_start_x("left", 1, 0), "left", True, "7", "TREINO")]
-        right_team = []
-    elif mode == "1V1_BOT":
+    if mode == "1V1_BOT":
         left_team = [VolleyballPlayer(team_start_x("left", 1, 0), "left", True, "7", "VOCE")]
-        right_team = [VolleyballPlayer(team_start_x("right", 1, 0), "right", False, "1", "BOT")]
+        right_team = [VolleyballPlayer(team_start_x("right", 1, 0), "right", False, "1", "AURORA 1")]
     elif mode == "2V2_BOT":
         left_team = [
             VolleyballPlayer(team_start_x("left", 2, 0), "left", True, "7", "VOCE"),
             VolleyballPlayer(team_start_x("left", 2, 1), "left", False, "11", "ALIADA"),
         ]
         right_team = [
-            VolleyballPlayer(team_start_x("right", 2, 0), "right", False, "1", "BOT 1"),
-            VolleyballPlayer(team_start_x("right", 2, 1), "right", False, "2", "BOT 2"),
+            VolleyballPlayer(team_start_x("right", 2, 0), "right", False, "1", "AURORA 1"),
+            VolleyballPlayer(team_start_x("right", 2, 1), "right", False, "2", "AURORA 2"),
         ]
     else:
         left_team = [VolleyballPlayer(team_start_x("left", 1, 0), "left", True, "7", "P1")]
@@ -1126,10 +1124,6 @@ def set_finished(winner):
 def score_point(winner):
     global score, current_server, point_announce, point_timer, game_state
     if game_state != "PLAYING":
-        return
-    if training_mode:
-        ball.reset("left")
-        spawn_action_text(GAME_W // 2, 190, "TREINO — TENTE NOVAMENTE", CYAN)
         return
     score[winner] += 1
     if mode == "2V2_BOT" and winner != current_server:
@@ -1206,9 +1200,9 @@ def draw_court(surface):
 
     # Banners.
     rounded(surface, (56, 260, 260, 42), NAVY, 10, PURPLE, 2)
-    text(surface, "ECLIPSE SPIKE", (186, 281), 16, WHITE, True)
+    text(surface, TEAM_LEFT_NAME, (186, 281), 15, WHITE, True)
     rounded(surface, (964, 260, 260, 42), NAVY, 10, ORANGE, 2)
-    text(surface, "ECLIPSE LEAGUE", (1094, 281), 16, WHITE, True)
+    text(surface, TEAM_RIGHT_NAME, (1094, 281), 15, WHITE, True)
 
     # Piso.
     for y in range(COURT_Y, GAME_H):
@@ -1236,8 +1230,8 @@ def draw_court(surface):
     pygame.draw.line(surface, (208, 242, 255), (NET_X - 2, COURT_Y - 118), (NET_X - 2, COURT_Y), 2)
 
     # Logo central.
-    text(surface, "ECLIPSE", (NET_X - 105, COURT_Y - 52), 24, (215, 224, 255), True)
-    text(surface, "SPIKE", (NET_X + 105, COURT_Y - 52), 24, (255, 226, 170), True)
+    text(surface, TEAM_LEFT_NAME, (NET_X - 105, COURT_Y - 52), 20, (215, 224, 255), True)
+    text(surface, TEAM_RIGHT_NAME, (NET_X + 105, COURT_Y - 52), 20, (255, 226, 170), True)
 
     # Postes, antenas e rede baixa e limpa.
     post = (148, 163, 184)
@@ -1251,9 +1245,9 @@ def draw_court(surface):
 
     # Mesa do marcador.
     rounded(surface, (55, 115, 250, 48), NAVY, 10, SLATE, 2)
-    text(surface, "ECLIPSE SPIKE", (180, 139), 16, YELLOW, True)
+    text(surface, TEAM_LEFT_NAME, (180, 139), 15, YELLOW, True)
     rounded(surface, (975, 115, 250, 48), NAVY, 10, SLATE, 2)
-    text(surface, "SPIKE ARENA", (1100, 139), 16, CYAN, True)
+    text(surface, TEAM_RIGHT_NAME, (1100, 139), 15, CYAN, True)
 
 
 def draw_touch_sequence(surface):
@@ -1306,11 +1300,11 @@ def draw_serve_panel(surface):
 
 
 def draw_hud(surface):
-    rounded(surface, (GAME_W // 2 - 205, 16, 410, 84), NAVY, 18, SLATE, 2)
-    left_label = "VOCE" if mode != "1V1_LOCAL" else "P1"
-    right_label = "BOTS" if mode == "2V2_BOT" else ("BOT" if mode == "1V1_BOT" else "P2")
-    text(surface, left_label, (GAME_W // 2 - 122, 31), 13, CYAN, True)
-    text(surface, right_label, (GAME_W // 2 + 122, 31), 13, RED_LIGHT, True)
+    rounded(surface, (GAME_W // 2 - 250, 16, 500, 84), NAVY, 18, SLATE, 2)
+    left_label = TEAM_LEFT_NAME if mode != "1V1_LOCAL" else "P1 • " + TEAM_LEFT_NAME
+    right_label = TEAM_RIGHT_NAME if mode != "1V1_LOCAL" else "P2 • " + TEAM_RIGHT_NAME
+    text(surface, left_label, (GAME_W // 2 - 145, 31), 11, CYAN, True)
+    text(surface, right_label, (GAME_W // 2 + 145, 31), 11, RED_LIGHT, True)
     text(surface, score["left"], (GAME_W // 2 - 72, 69), 34, CYAN, True)
     text(surface, score["right"], (GAME_W // 2 + 72, 69), 34, RED_LIGHT, True)
     text(surface, ":", (GAME_W // 2, 66), 24, SLATE, True)
@@ -1325,8 +1319,6 @@ def draw_hud(surface):
 
     text(surface, f"DIFICULDADE: {DIFFICULTIES[difficulty]['label']}", (GAME_W - 248, 48), 12, GRAY)
     text(surface, f"MODO: {mode_label(mode)}", (GAME_W - 248, 70), 12, GRAY)
-    if training_mode:
-        text(surface, "TREINO: Z manchete | X toque | C cortada | V largadinha | B mergulho", (GAME_W // 2, GAME_H - 24), 12, CYAN, True)
 
     if left_team:
         human = next((p for p in left_team if p.human), None)
@@ -1347,16 +1339,17 @@ def draw_hud(surface):
 
 def draw_pause_overlay(surface):
     overlay = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
-    overlay.fill((2, 6, 23, 175))
+    overlay.fill((2, 6, 23, 185))
     surface.blit(overlay, (0, 0))
-    rounded(surface, (410, 175, 460, 330), NAVY, 28, PURPLE, 3)
-    text(surface, "PAUSADO", (640, 250), 42, WHITE, True)
-    text(surface, "ESC ou ENTER = continuar", (640, 305), 16, CYAN, True)
-    text(surface, "R = reiniciar partida", (640, 340), 15, GRAY, True)
-    rounded(surface, (505, 392, 270, 54), PURPLE, 15, (189, 134, 255), 2)
-    text(surface, "CONTINUAR", (640, 420), 18, WHITE, True)
-    rounded(surface, (505, 462, 270, 54), NAVY, 15, SLATE, 2)
-    text(surface, "VOLTAR AO MENU", (640, 490), 16, WHITE, True)
+    rounded(surface, (375, 155, 530, 375), NAVY, 28, PURPLE, 3)
+    text(surface, "PAUSADO", (640, 225), 42, WHITE, True)
+    text(surface, "ENTER = continuar a partida", (640, 275), 16, CYAN, True)
+    text(surface, "ESC = voltar para a tela inicial", (640, 310), 16, YELLOW, True)
+    text(surface, "R = reiniciar a partida", (640, 345), 14, GRAY, True)
+    rounded(surface, (490, 392, 300, 56), PURPLE, 15, (189, 134, 255), 2)
+    text(surface, "CONTINUAR", (640, 421), 18, WHITE, True)
+    rounded(surface, (490, 466, 300, 56), NAVY, 15, SLATE, 2)
+    text(surface, "TELA INICIAL", (640, 495), 17, WHITE, True)
 
 
 def mode_label(value):
@@ -1364,7 +1357,6 @@ def mode_label(value):
         "1V1_BOT": "1V1 x BOT",
         "2V2_BOT": "2V2 x BOTS",
         "1V1_LOCAL": "1V1 LOCAL",
-        "TREINO": "TREINO",
     }.get(value, "-")
 
 
@@ -1381,22 +1373,20 @@ def draw_menu_background(surface):
 
 def draw_main_menu(surface):
     draw_menu_background(surface)
-    rounded(surface, (300, 78, 680, 568), NAVY, 28, SLATE, 2)
-    text(surface, "ECLIPSE", (640, 168), 58, ORANGE, True)
-    text(surface, "SPIKE", (640, 226), 58, PURPLE, True)
-    text(surface, "VOLEI EM PYTHON", (640, 267), 16, GRAY, True)
-    text(surface, "1V1 | 2V2 | LOCAL  •  3 toques  •  defesa  •  ataques  •  sets", (640, 296), 13, CYAN, True)
-    text(surface, "Saques, fisica melhorada, stamina e IA por dificuldade", (640, 318), 11, GRAY, True)
+    rounded(surface, (285, 65, 710, 590), NAVY, 28, SLATE, 2)
+    text(surface, "ECLIPSE", (640, 155), 56, ORANGE, True)
+    text(surface, "VÔLEI", (640, 214), 56, PURPLE, True)
+    text(surface, "JOGO DE VÔLEI EM PYTHON", (640, 255), 16, GRAY, True)
+    text(surface, "1V1 | 2V2 | LOCAL  •  3 toques  •  defesa  •  ataques  •  sets", (640, 282), 13, CYAN, True)
+    text(surface, "Saques, física melhorada, stamina e IA por dificuldade", (640, 303), 11, GRAY, True)
 
-    rounded(surface, (430, 334, 420, 60), PURPLE, 18, (189, 134, 255), 2)
-    text(surface, "JOGAR", (640, 365), 24, WHITE, True)
-    rounded(surface, (430, 412, 200, 58), NAVY, 16, SLATE, 2)
-    text(surface, "TREINO", (530, 441), 20, CYAN, True)
-    rounded(surface, (650, 412, 200, 58), NAVY, 16, SLATE, 2)
-    text(surface, "COMO JOGAR", (750, 441), 17, WHITE, True)
-    rounded(surface, (430, 488, 420, 58), NAVY, 16, SLATE, 2)
-    text(surface, "SAIR", (640, 517), 20, WHITE, True)
-    text(surface, "ENTER abre a selecao de modo  •  sem audio  •  sem bloqueio", (640, 588), 13, GRAY, True)
+    rounded(surface, (420, 350, 440, 58), PURPLE, 18, (189, 134, 255), 2)
+    text(surface, "JOGAR", (640, 379), 23, WHITE, True)
+    rounded(surface, (420, 425, 440, 58), NAVY, 16, SLATE, 2)
+    text(surface, "COMO JOGAR", (640, 454), 18, WHITE, True)
+    rounded(surface, (420, 500, 440, 58), NAVY, 16, SLATE, 2)
+    text(surface, "SAIR", (640, 529), 20, WHITE, True)
+    text(surface, "ENTER = jogar   •   ESC = sair   •   sem áudio", (640, 604), 12, GRAY, True)
 
 
 def mode_rects():
@@ -1404,13 +1394,12 @@ def mode_rects():
         ((180, 220, 270, 235), "1V1_BOT"),
         ((505, 220, 270, 235), "2V2_BOT"),
         ((830, 220, 270, 235), "1V1_LOCAL"),
-        ((505, 470, 270, 105), "TREINO"),
     ]
 
 
 def draw_mode_menu(surface):
     draw_menu_background(surface)
-    rounded(surface, (110, 70, 1060, 595), NAVY, 28, SLATE, 2)
+    rounded(surface, (110, 70, 1060, 535), NAVY, 28, SLATE, 2)
     text(surface, "COMO VOCE QUER JOGAR?", (640, 126), 34, ORANGE, True)
     text(surface, "Escolha o modo da partida", (640, 160), 15, GRAY, True)
     text(surface, "No 1V1 LOCAL, duas pessoas jogam no mesmo computador.", (640, 185), 12, WHITE, True)
@@ -1419,7 +1408,6 @@ def draw_mode_menu(surface):
         ((180, 220, 270, 235), "1V1", "CONTRA BOT", "VOCE x 1 bot", "1V1_BOT", BLUE),
         ((505, 220, 270, 235), "2V2", "CONTRA BOTS", "VOCE + aliada x 2 bots", "2V2_BOT", PURPLE),
         ((830, 220, 270, 235), "1V1", "LOCAL", "P1 x P2 no mesmo PC", "1V1_LOCAL", PINK),
-        ((505, 470, 270, 105), "TREINO", "SEM ADVERSARIO", "Teste movimentos e ataques", "TREINO", CYAN),
     ]
 
     mx, my = pygame.mouse.get_pos()
@@ -1434,8 +1422,8 @@ def draw_mode_menu(surface):
         rounded(surface, (rect[0] + 65, rect[1] + 173, 140, 34), color, 12)
         text(surface, "ESCOLHER", (rect[0] + rect[2] // 2, rect[1] + 190), 13, WHITE, True)
 
-    rounded(surface, (510, 520, 260, 50), NAVY, 14, SLATE, 2)
-    text(surface, "VOLTAR (ESC)", (640, 545), 17, WHITE, True)
+    rounded(surface, (510, 490, 260, 50), NAVY, 14, SLATE, 2)
+    text(surface, "VOLTAR (ESC)", (640, 515), 17, WHITE, True)
 
 
 def difficulty_rects():
@@ -1605,7 +1593,10 @@ while running:
                 if game_state == "PLAYING":
                     game_state = "PAUSED"
                 elif game_state == "PAUSED":
-                    game_state = "PLAYING"
+                    # ESC no pause sempre volta para a tela inicial do jogo.
+                    game_state = "MENU"
+                    menu_page = "MAIN"
+                    keys_down.clear()
                 elif game_state in ("POINT_SCORED", "SET_WON"):
                     game_state = "MENU"
                     menu_page = "MAIN"
@@ -1732,26 +1723,24 @@ while running:
 
             if game_state == "MENU":
                 if menu_page == "MAIN":
-                    if 430 <= mx <= 850 and 334 <= my <= 394:
+                    if 420 <= mx <= 860 and 350 <= my <= 408:
                         menu_page = "MODE"
-                    elif 430 <= mx <= 630 and 412 <= my <= 470:
-                        start_selected_mode("TREINO")
-                    elif 650 <= mx <= 850 and 412 <= my <= 470:
+                    elif 420 <= mx <= 860 and 425 <= my <= 483:
                         menu_page = "TUTORIAL"
-                    elif 430 <= mx <= 850 and 488 <= my <= 546:
+                    elif 420 <= mx <= 860 and 500 <= my <= 558:
                         running = False
 
                 elif menu_page == "MODE":
                     for rect, selected in mode_rects():
                         x, y, w, h = rect
                         if x <= mx <= x + w and y <= my <= y + h:
-                            if selected in ("1V1_LOCAL", "TREINO"):
+                            if selected == "1V1_LOCAL":
                                 start_selected_mode(selected)
                             else:
                                 pending_mode = selected
                                 menu_page = "DIFFICULTY"
                             break
-                    if 510 <= mx <= 770 and 520 <= my <= 570:
+                    if 510 <= mx <= 770 and 490 <= my <= 540:
                         menu_page = "MAIN"
 
                 elif menu_page == "DIFFICULTY":
@@ -1764,6 +1753,14 @@ while running:
 
                 elif menu_page == "TUTORIAL":
                     menu_page = "MAIN"
+
+            elif game_state == "PAUSED":
+                if 490 <= mx <= 790 and 392 <= my <= 448:
+                    game_state = "PLAYING"
+                elif 490 <= mx <= 790 and 466 <= my <= 522:
+                    game_state = "MENU"
+                    menu_page = "MAIN"
+                    keys_down.clear()
 
             elif game_state == "MATCHOVER":
                 if 450 <= mx <= 830 and 415 <= my <= 473:
